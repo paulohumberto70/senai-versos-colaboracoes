@@ -387,7 +387,10 @@ function generatePDF() {
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
     };
 
+    document.body.classList.add('pdf-generating');
+
     html2pdf().set(opt).from(element).save().then(() => {
+        document.body.classList.remove('pdf-generating');
         // Restaurar dropdowns após gerar o PDF
         selects.forEach(sel => {
             sel.style.display = 'block';
@@ -431,8 +434,11 @@ function shareBudget() {
 
     // Alerta para o usuário saber que está gerando (no iOS pode demorar 2 seg)
     setSystemStatus('Gerando PDF para compartilhar...', '#f39c12', 'fa-spinner fa-spin');
+    
+    document.body.classList.add('pdf-generating');
 
     html2pdf().set(opt).from(element).output('blob').then((blob) => {
+        document.body.classList.remove('pdf-generating');
         // Restaurar UI
         selects.forEach(sel => {
             sel.style.display = 'block';
@@ -458,6 +464,7 @@ function shareBudget() {
             forceDownload(blob, opt.filename);
         }
     }).catch(err => {
+        document.body.classList.remove('pdf-generating');
         alert("Erro ao gerar PDF: " + err);
         setSystemStatus('Erro ao gerar PDF', '#d92332', 'fa-exclamation-circle');
     });

@@ -682,4 +682,42 @@ body {
         display: none !important;
     }
 }
+
+/* --- FIX PDF GENERATION ON MOBILE --- */
+body.pdf-generating .document-container {
+    width: 210mm !important;
+    min-height: 297mm !important;
+    max-width: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+}
+body.pdf-generating .table-container {
+    overflow-x: visible !important;
+    padding: 0 20px !important;
+}
+body.pdf-generating .items-table {
+    min-width: 100% !important;
+}
+body.pdf-generating .footer-area {
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    gap: 0 !important;
+    padding: 10px 20px 20px 20px !important;
+}
+body.pdf-generating .footer-right {
+    width: 300px !important;
+}
+body.pdf-generating .client-info {
+    margin: 0 20px 20px 20px !important;
+    padding: 15px 20px !important;
+}
+body.pdf-generating .client-row label {
+    width: 130px !important;
+}
+body.pdf-generating .doc-logo h1 {
+    font-size: 46px !important;
+}
+body.pdf-generating .mobile-nav {
+    display: none !important;
+}
 
