@@ -339,6 +339,7 @@ function calculateGrandTotal() {
 function clearForm() {
     if (confirm('Tem certeza que deseja apagar todos os dados digitados?')) {
         document.getElementById('itemsBody').innerHTML = '';
+        document.getElementById('budgetName').value = '';
         document.getElementById('cliName').value = '';
         document.getElementById('cliId').value = '';
         document.getElementById('cliPhone').value = '';
@@ -375,9 +376,12 @@ function generatePDF() {
 
     const element = document.getElementById('budget-document');
 
+    const budgetName = document.getElementById('budgetName').value.trim();
+    const safeName = budgetName ? "_" + budgetName.replace(/[^a-zA-Z0-9_ -]/g, '').replace(/\s+/g, '_') : "";
+
     const opt = {
         margin: 0,
-        filename: `Orcamento_Lider_N${document.getElementById('ordNum').textContent}.pdf`,
+        filename: `Orcamento_Lider_N${document.getElementById('ordNum').textContent}${safeName}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
@@ -413,9 +417,13 @@ function shareBudget() {
     });
 
     const element = document.getElementById('budget-document');
+    
+    const budgetName = document.getElementById('budgetName').value.trim();
+    const safeName = budgetName ? "_" + budgetName.replace(/[^a-zA-Z0-9_ -]/g, '').replace(/\s+/g, '_') : "";
+
     const opt = {
         margin: 0,
-        filename: `Orcamento_Lider_N${orderNum}.pdf`,
+        filename: `Orcamento_Lider_N${orderNum}${safeName}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
