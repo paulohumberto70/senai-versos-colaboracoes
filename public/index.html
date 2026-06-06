@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORÇAMENTO - Líder - Portas Automática</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2pdf.js for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="mobile-view-menu">
+
+    <!-- MOBILE NAVIGATION (Visible only on phones) -->
+    <div class="mobile-nav no-print">
+        <button onclick="showSidebar()" id="btnNavMenu" class="active"><i class="fas fa-bars"></i> Cadastros</button>
+        <button onclick="showDocument()" id="btnNavDoc"><i class="fas fa-file-invoice-dollar"></i> Orçamento</button>
+    </div>
+
+    <!-- SIDEBAR FOR CONTROLS (NOT PRINTED) -->
+    <div class="sidebar no-print">
+        <div class="logo-area">
+            <h1>Líder</h1>
+            <h3>PORTAS AUTOMÁTICAS</h3>
+        </div>
+
+        <div class="control-panel">
+            <h3>PAINEL DE CONTROLE</h3>
+
+            <div class="input-group" style="display: none;" id="jsonEditorSection">
+                <label>Produtos (JSON)</label>
+                <textarea id="prodEditor" rows="6" style="width:100%;font-family:monospace;"></textarea>
+                <button class="btn btn-sm btn-secondary" onclick="applyProductEdits()" style="margin-top:5px;">Enviar para servidor</button>
+
+                <label style="margin-top: 10px;">Clientes (JSON)</label>
+                <textarea id="clientEditor" rows="6" style="width:100%;font-family:monospace;"></textarea>
+                <button class="btn btn-sm btn-secondary" onclick="applyClientEdits()" style="margin-top:5px;">Enviar para servidor</button>
+            </div>
+
+            <button class="btn btn-secondary btn-sm" onclick="toggleJsonEditor()" style="font-size: 0.75rem;">
+                <i class="fas fa-code"></i> Modo Avançado (JSON)
+            </button>
+
+            <button class="btn btn-primary" onclick="openProductModal()" style="background-color: #f39c12; color: white;">
+                <i class="fas fa-box-open"></i> NOVO PRODUTO
+            </button>
+
+            <button class="btn btn-primary" onclick="openClientModal()" style="background-color: #8e44ad; color: white;">
+                <i class="fas fa-user-plus"></i> NOVO CLIENTE
+            </button>
+
+            <div class="input-group">
+                <label>Carregar Cliente Rápido</label>
+                <select id="quickClientSelect" onchange="loadClient()">
+                    <!-- options populadas no JS -->
+                </select>
+            </div>
+
+            <button class="btn btn-primary" onclick="generatePDF()">
+                <i class="fas fa-file-pdf"></i> GERAR PDF DO ORÇAMENTO
+            </button>
+            <button class="btn btn-primary" onclick="shareBudget()" style="background-color: #25D366; color: white;">
+                <i class="fas fa-share-alt"></i> ENVIAR WHATSAPP / EMAIL
+            </button>
+            <button class="btn btn-secondary" onclick="window.print()">
+                <i class="fas fa-print"></i> IMPRIMIR DIRETO
+            </button>
+            <button class="btn btn-danger" onclick="clearForm()">
+                <i class="fas fa-trash"></i> LIMPAR TUDO
+            </button>
+        </div>
+
+        <div class="system-status">
+            <p><i class="fas fa-check-circle" style="color: #4CAF50;"></i> Sistema Online e Pronto</p>
+            <p style="font-size:0.85rem; color:#a9c2dd;">SISTEMA GERADOR DE ORÇAMENTOS</p>
+        </div>
+    </div>
+
+    <!-- MAIN DOCUMENT AREA (PRINTED) -->
+    <div class="main-content">
+        <div class="document-container" id="budget-document">
+
+            <!-- HEADER AZUL/VERMELHO -->
+            <div class="doc-header">
+                <div class="doc-logo">
+                    <h1>Líder</h1>
+                    <h2>PORTAS AUTOMÁTICAS</h2>
+                    <p>FÁBRICA E DISTRIBUIDORA</p>
+                </div>
+                <!-- novo triângulo superior direito -->
+                <div class="header-accent top-right"></div>
+            </div>
+
+            <div class="doc-title-strip">
+                <h3>ORÇAMENTO <span id="ordNum"
+                        style="font-size:14px; color:#555; position:absolute; right: 20px; outline:none;"
+                        contenteditable="true">00000</span></h3>
+            </div>
+
+            <!-- CLIENT INFO (ROWS GRISES) -->
+            <div class="client-info">
+                <div class="client-row">
+                    <label>RAZÃO SOCIAL:</label>
+                    <input type="text" id="cliName" placeholder="NOME DO CLIENTE" class="doc-input-inline">
+                </div>
+                <div class="client-row">
+                    <label>CNPJ/CPF:</label>
+                    <input type="text" id="cliId" placeholder="000.000.000-00" class="doc-input-inline">
+                </div>
+                <div class="client-row">
+                    <label>ENDEREÇO:</label>
+                    <input type="text" id="cliAddress" placeholder="AVENIDA, RUA, BAIRRO" class="doc-input-inline">
+                </div>
+                <div class="client-row">
+                    <label>TELEFONE:</label>
+                    <input type="text" id="cliPhone" placeholder="(61) 90000-0000" class="doc-input-inline">
+                </div>
+            </div>
+
+            <!-- ITEMS TABLE COM HEADER VERMELHO -->
+            <div class="table-container">
+                <table class="items-table" id="itemsTable">
+                    <thead>
+                        <tr>
+                            <th width="5%">ITEM</th>
+                            <th width="45%">DESCRIÇÃO</th>
+                            <th width="10%">QUANT.</th>
+                            <th width="15%">UNITÁRIO</th>
+                            <th width="15%">TOTAL</th>
+                            <th width="10%" class="no-print">AÇÃO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsBody">
+                        <!-- Rows via JS -->
+                    </tbody>
+                </table>
+                <button class="btn btn-secondary btn-sm mt-2 no-print" onclick="addItemRow()" style="margin-top: 10px;">
+                    <i class="fas fa-plus"></i> Add Linha
+                </button>
+            </div>
+
+            <!-- FOOTER INFO & TOTALS -->
+            <div class="footer-area">
+                <div class="footer-left">
+                    <div style="margin-bottom: 5px;">
+                        <strong>DATA:</strong> <span id="currentDate"></span>
+                    </div>
+                    <div>
+                        <strong>VALIDADE DO DOCUMENTO: 30 DIAS</strong>
+                    </div>
+
+                    <div class="address-info">
+                        EM VITORIA DA CONQUISTA:
+                        AV. BRUMADO, Nº 120
+                        BAIRRO: CENTRO
+                        (77) 9 8146-4105
+
+                        EM BRASILIA:
+                        RUA 04 - CHACARA 26 DE SETEMBRO
+                        BRASILIA - DF
+                        (61) 9 9593-0230
+                        https://www.atacadaodasportasdeacodf.com.br
+                    </div>
+                </div>
+
+                <div class="footer-right">
+                    <table class="totals-table">
+                        <tr>
+                            <td>Valor</td>
+                            <td id="subtotalDisplay">R$ 0,00</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Desconto
+                                <div class="discount-input-group no-print" style="margin-top: 5px;">
+                                    <input type="number" id="discountInput" value="0" min="0" step="0.5"
+                                        oninput="calculateGrandTotal()">
+                                    <span style="font-size:10px; font-weight:normal;">%</span>
+                                </div>
+                            </td>
+                            <td><span id="discountMoneyDisplay" style="color: #d92332;">R$ 0,00</span></td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>Valor Total</td>
+                            <td id="grandTotalDisplay">R$ 0,00</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CREDITS -->
+            <div style="text-align: center; font-size: 9px; color: #aaa; margin-top: 15px; margin-bottom: 10px; font-weight: 500;">
+                Todos os direitos reservados. Desenvolvido por <strong>PAULO HUMBERTO</strong> - Pedro II, PI
+            </div>
+
+            <!-- BOTTOM BLUE STRIP -->
+            <div class="bottom-strip"></div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <!-- Modal de Produto -->
+    <div id="productModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Adicionar Novo Produto</h3>
+                <button class="close-btn" onclick="closeProductModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label>Nome do Produto</label>
+                    <input type="text" id="newProdName" class="form-input" placeholder="Ex: MOTOR AC 400 KILOS">
+                </div>
+                <div class="input-group" style="margin-top: 10px;">
+                    <label>Preço (R$)</label>
+                    <input type="number" id="newProdPrice" class="form-input" placeholder="Ex: 1200.00" step="0.01">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="saveNewProduct()">Salvar Produto</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Cliente -->
+    <div id="clientModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Adicionar Novo Cliente</h3>
+                <button class="close-btn" onclick="closeClientModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label>Identificador Curto (Sem espaços)</label>
+                    <input type="text" id="newCliId" class="form-input" placeholder="Ex: alex_vip">
+                </div>
+                <div class="input-group" style="margin-top: 10px;">
+                    <label>Rótulo (Aparece no seletor)</label>
+                    <input type="text" id="newCliLabel" class="form-input" placeholder="Ex: Alexandre (Cliente VIP)">
+                </div>
+                <div class="input-group" style="margin-top: 10px;">
+                    <label>Nome / Razão Social</label>
+                    <input type="text" id="newCliName" class="form-input" placeholder="Ex: ALEXANDRE SILVA">
+                </div>
+                <div class="input-group" style="margin-top: 10px;">
+                    <label>Documento (CPF/CNPJ)</label>
+                    <input type="text" id="newCliDoc" class="form-input" placeholder="Ex: 123.456.789-00">
+                </div>
+                <div class="input-group" style="margin-top: 10px;">
+                    <label>Telefone</label>
+                    <input type="text" id="newCliPhone" class="form-input" placeholder="Ex: (61) 90000-0000">
+                </div>
+                <div class="input-group" style="margin-top: 10px;">
+                    <label>Endereço</label>
+                    <input type="text" id="newCliAddress" class="form-input" placeholder="Ex: QND 45, Taguatinga - DF">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="saveNewClient()">Salvar Cliente</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="dados.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
