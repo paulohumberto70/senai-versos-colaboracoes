@@ -15,6 +15,21 @@ function loadClientsDropdown() {
     });
 }
 
+function refreshProductDropdowns() {
+    const selects = document.querySelectorAll('.prod-select');
+    selects.forEach(select => {
+        const currentVal = select.value;
+        let optionsHtml = '<option value="">-- Selecione ou Digite o Produto --</option>';
+        produtosDB.forEach(p => {
+            optionsHtml += `<option value="${p.id}" data-price="${p.preco}">${p.nome}</option>`;
+        });
+        select.innerHTML = optionsHtml;
+        if (currentVal) {
+            select.value = currentVal;
+        }
+    });
+}
+
 // server CRUD helpers
 function fetchProducts() {
     return fetch(`${API_URL}/api/produtos`).then(r => r.json());
@@ -79,6 +94,7 @@ function applyProductEdits() {
             // also update the local copy with whatever the server returned
             saveLocal('produtos', data);
             editor.value = JSON.stringify(produtosDB, null, 2);
+            refreshProductDropdowns();
             setSystemStatus('Produtos Sincronizados', '#4CAF50', 'fa-check-circle');
         })
         .catch(err => {
@@ -88,6 +104,7 @@ function applyProductEdits() {
             produtosDB.length = 0;
             produtos.forEach(p => produtosDB.push(p));
             editor.value = JSON.stringify(produtosDB, null, 2);
+            refreshProductDropdowns();
         });
     } catch (e) {
         alert('JSON inválido: ' + e.message);
