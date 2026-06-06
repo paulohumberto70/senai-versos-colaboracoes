@@ -397,10 +397,7 @@ function generatePDF() {
 function shareBudget() {
     const phoneInput = document.getElementById('cliPhone').value.replace(/\D/g, '');
     const clientName = document.getElementById('cliName').value || "Cliente";
-    const total = document.getElementById('grandTotalDisplay').textContent;
     const orderNum = document.getElementById('ordNum').textContent;
-
-    const msgText = `Olá ${clientName}! Segue o valor do seu orçamento (Nº ${orderNum}) da LIDER Portas: *${total}*.`;
 
     // Preparar PDF
     const selects = document.querySelectorAll('.prod-select');
@@ -424,55 +421,50 @@ function shareBudget() {
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
     };
 
+    // Alerta para o usuário saber que está gerando (no iOS pode demorar 2 seg)
+    setSystemStatus('Gerando PDF para compartilhar...', '#f39c12', 'fa-spinner fa-spin');
+
     html2pdf().set(opt).from(element).output('blob').then((blob) => {
         // Restaurar UI
         selects.forEach(sel => {
             sel.style.display = 'block';
         });
         document.querySelectorAll('.print-text-temp').forEach(el => el.remove());
+        setSystemStatus('Sistema Online e Pronto', '#4CAF50', 'fa-check-circle');
 
         const file = new File([blob], opt.filename, { type: 'application/pdf' });
 
-        // Tentar Web Share API (Celulares / Navegadores modernos)
+        // Tentar Web Share API
+        // IMPORTANTE: No iOS, se mandarmos 'text' e 'files' juntos, o WhatsApp IGNORA o arquivo PDF e manda só o texto.
+        // Por isso, mandamos APENAS o arquivo, assim o WhatsApp anexa o PDF perfeitamente!
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
             navigator.share({
                 files: [file],
-                title: `Orçamento LIDER - ${clientName}`,
-                text: msgText
+                title: `Orçamento LIDER - ${clientName}`
             }).catch(err => {
                 console.warn("Compartilhamento cancelado ou falhou:", err);
-                fallbackWhatsApp(phoneInput, msgText);
+                forceDownload(blob, opt.filename);
             });
         } else {
-            // Fallback para PC / Navegadores antigos
-            fallbackWhatsApp(phoneInput, msgText);
-            // Download do PDF de forma transparente
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = opt.filename;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            a.remove();
+            // Fallback
+            forceDownload(blob, opt.filename);
         }
+    }).catch(err => {
+        alert("Erro ao gerar PDF: " + err);
+        setSystemStatus('Erro ao gerar PDF', '#d92332', 'fa-exclamation-circle');
     });
 }
 
-function fallbackWhatsApp(phone, msg) {
-    if (phone.length < 10) {
-        alert("O número de telefone não parece válido para enviar WhatsApp. O PDF foi gerado e baixado no seu computador.");
-        return;
-    }
-    
-    // Assegurar o +55 para Brasil se não houver código de país
-    let finalPhone = phone;
-    if (finalPhone.length <= 11) {
-        finalPhone = "55" + finalPhone;
-    }
-
-    const waUrl = `https://wa.me/${finalPhone}?text=${encodeURIComponent(msg)}`;
-    window.open(waUrl, '_blank');
+function forceDownload(blob, filename) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+    alert("O PDF do orçamento foi salvo nos seus arquivos/downloads! Agora você pode enviá-lo pelo WhatsApp como anexo.");
 }
 
 // Inicialização
