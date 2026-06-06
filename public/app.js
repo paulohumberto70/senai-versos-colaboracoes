@@ -363,7 +363,7 @@ function generatePDF() {
     // Esconder selects e mostrar o texto para o PDF ficar limpo
     const selects = document.querySelectorAll('.prod-select');
     selects.forEach(sel => {
-        const text = sel.options[sel.selectedIndex].text;
+        const text = sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex].text : "";
         sel.setAttribute('data-original-val', sel.value);
         sel.style.display = 'none';
 
@@ -402,7 +402,7 @@ function shareBudget() {
     // Preparar PDF
     const selects = document.querySelectorAll('.prod-select');
     selects.forEach(sel => {
-        const text = sel.options[sel.selectedIndex].text;
+        const text = sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex].text : "";
         sel.setAttribute('data-original-val', sel.value);
         sel.style.display = 'none';
 
