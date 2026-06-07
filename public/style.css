@@ -391,9 +391,27 @@ body {
 }
 
 .address-info {
-    margin-top: 10px;
+    margin-top: 15px;
     font-size: 10px;
-    color: #777;
+    color: #666;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.address-block {
+    line-height: 1.4;
+    border-left: 3px solid var(--primary);
+    padding-left: 8px;
+}
+
+.address-block strong {
+    color: var(--primary);
+    font-size: 11px;
+}
+
+.address-block.proprietor {
+    border-left: 3px solid #d92332;
 }
 
 .footer-right {
