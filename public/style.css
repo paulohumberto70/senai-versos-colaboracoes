@@ -42,10 +42,12 @@ body {
     text-align: center; /* center contents including h1 */
 }
 
-.logo-area h1 {
-    font-size: 2.2rem;
-    font-weight: 800;
+.logo-area .brand-lider {
+    font-size: 2.8rem;
+    font-weight: 900;
+    font-style: italic;
     color: #fff;
+    margin-top: 5px;
 }
 
 .logo-area p {
@@ -189,11 +191,21 @@ body {
     box-shadow: 40px 10px 0 var(--accent);
 }
 
-.doc-logo h1 {
+.doc-logo img, .logo-area img {
+    height: 85px;
+    width: 85px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.doc-logo .brand-lider {
     color: #ffffff;
-    font-size: 46px;
+    font-size: 60px;
+    font-style: italic;
     font-weight: 900;
-    margin: 0;
+    margin: 5px 0 0 0;
     letter-spacing: 2px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -664,8 +676,8 @@ body {
         width: 100%;
     }
     
-    .doc-logo h1 {
-        font-size: 32px; /* smaller logo on mobile */
+    .doc-logo .brand-lider {
+        font-size: 42px; /* smaller logo text on mobile */
     }
     
     /* Toggle Logic */
@@ -714,8 +726,8 @@ body.pdf-generating .client-info {
 body.pdf-generating .client-row label {
     width: 130px !important;
 }
-body.pdf-generating .doc-logo h1 {
-    font-size: 46px !important;
+body.pdf-generating .doc-logo .brand-lider {
+    font-size: 60px !important;
 }
 body.pdf-generating .mobile-nav {
     display: none !important;
